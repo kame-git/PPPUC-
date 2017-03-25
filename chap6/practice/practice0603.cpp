@@ -81,9 +81,11 @@ Token Token_stream::get()
         return Token(ch);        // let each character represent itself
     case '{': case '}':
         return Token(ch);
+    case '!':
+        return Token(ch);
     case '.':
     case '0': case '1': case '2': case '3': case '4':
-    case '5': case '6': case '7': case '7': case '9':
+    case '5': case '6': case '7': case '8': case '9':
         {    
             cin.putback(ch);         // put digit back into the input stream
             double val;
@@ -132,22 +134,44 @@ double primary()
 }
 
 //------------------------------------------------------------------------------
+int factorial(int n)
+{
+    int x;
+    if (n > 0) return n * factorial(n-1);
+    else return 1;
+}
+
+double pow()
+{
+    double left = primary();
+    Token t = ts.get();
+
+    if (t.kind == '!') {
+        left = factorial(left);
+    } else {
+        ts.putback(t);
+    }
+
+    return left;
+}
+
+//------------------------------------------------------------------------------
 
 // deal with *, /, and %
 double term()
 {
-    double left = primary();
+    double left = pow();
     Token t = ts.get();        // get the next token from token stream
 
     while(true) {
         switch (t.kind) {
         case '*':
-            left *= primary();
+            left *= pow();
             t = ts.get();
             break;
         case '/':
             {    
-                double d = primary();
+                double d = pow();
                 if (d == 0) error("divide by zero");
                 left /= d; 
                 t = ts.get();
