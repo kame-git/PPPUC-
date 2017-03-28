@@ -77,7 +77,7 @@ Token Token_stream::get()
     switch (ch) {
     case ';':    // for "print"
     case 'q':    // for "quit"
-    case '(': case ')': case '+': case '-': case '*': case '/': 
+    case '(': case ')': case '+': case '-': case '*': case '/': case '%':
         return Token(ch);        // let each character represent itself
     case '.':
     case '0': case '1': case '2': case '3': case '4':
@@ -141,13 +141,28 @@ double term()
             t = ts.get();
             break;
         case '/':
-            {    
-                double d = primary();
-                if (d == 0) error("divide by zero");
-                left /= d; 
-                t = ts.get();
-                break;
-            }
+        {    
+            double d = primary();
+            if (d == 0) error("divide by zero");
+            left /= d; 
+            t = ts.get();
+            break;
+        }
+        case '%':
+        {
+            double d = primary();
+            int i1 = int(left);
+            if (i1 != left)
+                error("left-hand operand of % not int");
+            int i2 = int(d);
+            if (i2 != d)
+                error("right-hand operand of % not int");
+            if (i2 == 0)
+                error("%: divide by zero");
+            left = i1 % i2;
+            t = ts.get();
+            break;
+        }
         default: 
             ts.putback(t);     // put t back into the token stream
             return left;
