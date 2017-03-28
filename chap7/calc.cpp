@@ -44,6 +44,7 @@ public:
     Token_stream();   // make a Token_stream that reads from cin
     Token get();      // get a Token (get() is defined elsewhere)
     void putback(Token t);    // put a Token back
+    void ignore(char c);    // cまでの(cを含む)文字を破棄する
 private:
     bool full;        // is there a Token in the buffer?
     Token buffer;     // here is where we keep a Token put back using putback()
@@ -103,6 +104,20 @@ Token Token_stream::get()
     default:
         error("Bad token");
     }
+}
+
+//------------------------------------------------------------------------------
+void Token_stream::ignore(char c)
+{
+    if (full && c ==buffer.kind) {
+        full = false;
+        return;
+    }
+    full = false;
+
+    char ch = 0;
+    while (cin >> ch)
+        if (ch == c) return;
 }
 
 //------------------------------------------------------------------------------
@@ -208,10 +223,17 @@ double expression()
 }
 
 //------------------------------------------------------------------------------
+void clean_up_mess()
+{
+    ts.ignore(print);
+}
+
+//------------------------------------------------------------------------------
 
 void calculate()    // 式評価ループ
 {
-    while (cin) {
+    while (cin) 
+    try {
         cout << prompt;
         Token t = ts.get();
         while (t.kind == print)
@@ -220,6 +242,10 @@ void calculate()    // 式評価ループ
             return;
         ts.putback(t);
         cout << result << expression() << endl;
+    }
+    catch (exception& e) {
+        cerr << e.what() << endl;
+        clean_up_mess();
     }
 }
 
