@@ -191,23 +191,27 @@ int main()
             cout << "> ";
             Token t = ts.get();
 
-            if (t.kind == 'q') break; // 'q' for quit
-            if (t.kind == ';')        // ';' for "print now"
-                cout << "=" << val << '\n';
-            else
-                ts.putback(t);
-            val = expression();
+            while (t.kind == ';')
+                t = ts.get();
+
+            if (t.kind == 'q') {
+                keep_window_open();
+                return 0;
+            }
+            ts.putback(t);    
+            cout << "=" << expression() << endl;
         }
-            keep_window_open();
+        keep_window_open();
+        return 0;
     }
     catch (exception& e) {
-        cerr << "error: " << e.what() << '\n'; 
-            keep_window_open();
+        cerr << e.what() << e.what() << endl; 
+            keep_window_open("~~");
         return 1;
     }
     catch (...) {
-        cerr << "Oops: unknown exception!\n"; 
-            keep_window_open();
+        cerr << "exception \n"; 
+        keep_window_open("~~");
         return 2;
     }
 }
