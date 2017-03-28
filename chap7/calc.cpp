@@ -19,6 +19,12 @@
 
 #include "std_lib_facilities.h"
 
+const char number = '8';    // t.kind==numberはtが数字のトークンであることを意味する。
+const char quit = 'q';      // t.kind==quitはtが終了のトークンであることを意味する。
+const char print = ';';     // t.kind==printはtが出力のトークンであることを意味する。
+const string prompt = "> ";
+const string result = "= "; // これに結果が続くことを示す。
+
 //------------------------------------------------------------------------------
 
 class Token {
@@ -77,17 +83,23 @@ Token Token_stream::get()
     switch (ch) {
     case ';':    // for "print"
     case 'q':    // for "quit"
-    case '(': case ')': case '+': case '-': case '*': case '/': case '%':
+    case '(': 
+    case ')': 
+    case '+': 
+    case '-': 
+    case '*': 
+    case '/': 
+    case '%':
         return Token(ch);        // let each character represent itself
     case '.':
     case '0': case '1': case '2': case '3': case '4':
     case '5': case '6': case '7': case '8' : case '9':
-        {    
-            cin.putback(ch);         // put digit back into the input stream
-            double val;
-            cin >> val;              // read a floating-point number
-            return Token('8',val);   // let '8' represent "a number"
-        }
+    {    
+        cin.putback(ch);         // put digit back into the input stream
+        double val;
+        cin >> val;              // read a floating-point number
+        return Token(number,val);   // let '8' represent "a number"
+    }
     default:
         error("Bad token");
     }
@@ -115,7 +127,7 @@ double primary()
         if (t.kind != ')') error("')' expected");
         return d;
     }
-    case '8':            // we use '8' to represent a number
+    case number:     
         return t.value;  // return the number's value
     case '-':
         return - primary();
@@ -197,29 +209,27 @@ double expression()
 
 //------------------------------------------------------------------------------
 
+void calculate()    // 式評価ループ
+{
+    while (cin) {
+        cout << prompt;
+        Token t = ts.get();
+        while (t.kind == print)
+            t = ts.get();
+        if (t.kind == quit)
+            return;
+        ts.putback(t);
+        cout << result << expression() << endl;
+    }
+}
+
+//------------------------------------------------------------------------------
+
 int main()
 {
-    cout << "\"Wellcom to our simple calculator \n";
-    cout << "Please enter expressions using floating-point numbers.\"\n";
-
-    double val = 0;
-
     try
     {
-        while (cin) {
-            cout << "> ";
-            Token t = ts.get();
-
-            while (t.kind == ';')
-                t = ts.get();
-
-            if (t.kind == 'q') {
-                keep_window_open();
-                return 0;
-            }
-            ts.putback(t);    
-            cout << "=" << expression() << endl;
-        }
+        calculate();
         keep_window_open();
         return 0;
     }
