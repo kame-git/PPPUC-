@@ -1,5 +1,5 @@
 CC = g++
-CLAGS = -g -Wall
+CFLAGS = -g -Wall -O0
 TARGET = calc
 INCLUDE = /home/nakao/PPPUCPP/
 

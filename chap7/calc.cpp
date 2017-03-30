@@ -25,16 +25,31 @@ const char print = ';';     // t.kind==printはtが出力のトークンであ�
 const string prompt = "> ";
 const string result = "= "; // これに結果が続くことを示す。
 
+const char name = 'a';      // 名前トークン
+const char let = 'L';       // 宣言トークン
+const string declkey = "let";   // 宣言キーワード
+
+//------------------------------------------------------------------------------
+class Variable {
+public:
+    string name;
+    double value;
+    Variable (string n, double v) : name(n), value(v) {}
+};
+
 //------------------------------------------------------------------------------
 
 class Token {
 public:
     char kind;        // what kind of token
     double value;     // for numbers: a value 
+    string name;
     Token(char ch)    // make a Token from a char
         :kind(ch), value(0) { }    
     Token(char ch, double val)     // make a Token from a char and a double
         :kind(ch), value(val) { }
+    Token(char ch, string n) 
+        : kind(ch), name(n) {}
 };
 
 //------------------------------------------------------------------------------
@@ -91,6 +106,7 @@ Token Token_stream::get()
     case '*': 
     case '/': 
     case '%':
+    case '=':
         return Token(ch);        // let each character represent itself
     case '.':
     case '0': case '1': case '2': case '3': case '4':
@@ -102,6 +118,14 @@ Token Token_stream::get()
         return Token(number,val);   // let '8' represent "a number"
     }
     default:
+        if (isalpha(ch)) {
+            string s;
+            s += ch;
+            while (cin.get(ch) && (isalpha(ch) || isdigit(ch))) s += ch;
+            cin.putback(ch);
+            if (s == declkey) return Token(let);
+            return Token(name, s);
+        }
         error("Bad token");
     }
 }
@@ -125,11 +149,76 @@ void Token_stream::ignore(char c)
 Token_stream ts;        // provides get() and putback() 
 
 //------------------------------------------------------------------------------
+vector<Variable> var_table;
+
+//------------------------------------------------------------------------------
+
+double get_value(string s)
+{
+    for (size_t i = 0; i < var_table.size(); ++i)
+        if (var_table[i].name == s) return var_table[i].value;
+    error("get: undefined variable ", s);
+}
+
+//------------------------------------------------------------------------------
+void set_value(string s, double d)
+{
+    for (size_t i = 0; i < var_table.size(); ++i)
+        if (var_table[i].name == s) {
+            var_table[i].value = d;
+            return;
+        }
+    error("set: undefined variable ", s);
+}
+
+//------------------------------------------------------------------------------
 
 double expression();    // declaration so that primary() can call expression()
 
 //------------------------------------------------------------------------------
 
+bool is_declared(string var)
+{
+    for (size_t i = 0; i < var_table.size(); ++i)
+        if (var_table[i].name == var) return true;
+    return false;
+}
+
+double define_name(string var, double val)
+{
+    if (is_declared(var)) error(var, " declared twice");
+    var_table.push_back(Variable(var, val));
+    return val;
+}
+
+double declaration()
+{
+    Token t = ts.get();
+    if (t.kind != name) error("name expected in declaration");
+    string var_name = t.name;
+
+    Token t2 = ts.get();
+    if (t2.kind != '=') error("= missing in declaration of ", var_name);
+
+    double d = expression();
+    define_name(var_name, d);
+    return d;
+}
+
+//------------------------------------------------------------------------------
+double statement()
+{
+    Token t = ts.get();
+    switch (t.kind) {
+    case let:
+        return declaration();
+    default:
+        ts.putback(t);
+        return expression();
+    }
+}
+
+//------------------------------------------------------------------------------
 // deal with numbers and parentheses
 double primary()
 {
@@ -142,6 +231,8 @@ double primary()
         if (t.kind != ')') error("')' expected");
         return d;
     }
+    case name:
+        return get_value(t.name);
     case number:     
         return t.value;  // return the number's value
     case '-':
@@ -241,7 +332,7 @@ void calculate()    // 式評価ループ
         if (t.kind == quit)
             return;
         ts.putback(t);
-        cout << result << expression() << endl;
+        cout << result << statement() << endl;
     }
     catch (exception& e) {
         cerr << e.what() << endl;
@@ -255,7 +346,11 @@ int main()
 {
     try
     {
+        define_name("pi", 3.1415926535);
+        define_name("e", 2.7182818284);
+
         calculate();
+
         keep_window_open();
         return 0;
     }
