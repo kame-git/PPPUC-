@@ -16,6 +16,6 @@ tags: $(TARGET)
 
 test: $(TARGET)
 	@echo
-	./$(TARGET) < test.dat
+	./$(TARGET) < test1.dat
 	@echo
 	    

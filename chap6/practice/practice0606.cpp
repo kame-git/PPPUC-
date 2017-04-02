@@ -34,6 +34,40 @@ bool verb()
     return false;
 }
 
+// 冠詞
+bool art()
+{
+    string s;
+    cin >> s;
+
+    // TODO: 英単語はvectorなどに保存すること!
+    if (s == "The")
+        return true;
+
+    return false;
+}
+
+// 名詞句
+bool pro()
+{
+    // TODO: noumでtheをチェックすると、そのままtheを飲み込んでしまう!
+    // よって、art()でtheをチェックすることができない!
+    // noum()の中で一度読みんだtheをcinに戻すことも可能だが、他に良い
+    // 方法があるのではないか?
+    if (noum())
+        return true;
+
+    if (art())
+        if (noum())
+            return true;
+        else 
+            return false;
+    else
+        return false;
+
+    return false;
+}
+
 bool conj()
 {
     string s;
@@ -51,10 +85,11 @@ bool finish()
     return false;
 }
 
-bool scentence()
+bool sentence()
 {
     while (true) {
-        if (noum() && verb()) {
+        /* if (noum() && verb()) { */
+        if (pro() && verb()) {
             char c;
             cin >> c;
             if (c == '.') {
@@ -68,7 +103,7 @@ bool scentence()
             return false;
 
         if (conj())
-            return scentence();
+            return sentence();
         else 
             return false;
     }
@@ -86,7 +121,7 @@ void check_sentence()
             return;
         cin.putback(c);
 
-        if (scentence())
+        if (sentence())
             cout << "OK" << endl;
         else {
             // TODO: 残りのデータを全て読み飛ばして、再入力可能
