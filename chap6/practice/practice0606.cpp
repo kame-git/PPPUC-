@@ -8,6 +8,12 @@
  * とに「OK」または「not OK」のどちらかを返すこと。
  */
 
+/*
+ * テキストでは最後にピリオド(.)がない場合も「not OK」を表示するこ
+ * とになっているが、cin >> を使用する場合は改行文字の判別ができな
+ * いため難しいかも？
+ */
+
 #include "std_lib_facilities.h"
 
 bool noum()
@@ -34,6 +40,14 @@ bool verb()
     return false;
 }
 
+// 読込んだ文字列をcinに戻す
+void putback_string(string& s)
+{
+    for (size_t i = s.size(); i > 0; --i) {
+        cin.putback(s[i-1]);
+    }
+}
+
 // 冠詞
 bool art()
 {
@@ -41,8 +55,10 @@ bool art()
     cin >> s;
 
     // TODO: 英単語はvectorなどに保存すること!
-    if (s == "The")
+    if (s == "the")
         return true;
+    else
+        putback_string(s);
 
     return false;
 }
@@ -50,19 +66,16 @@ bool art()
 // 名詞句
 bool pro()
 {
-    // TODO: noumでtheをチェックすると、そのままtheを飲み込んでしまう!
-    // よって、art()でtheをチェックすることができない!
-    // noum()の中で一度読みんだtheをcinに戻すことも可能だが、他に良い
-    // 方法があるのではないか?
-    if (noum())
-        return true;
-
-    if (art())
+    if (art()) {
         if (noum())
             return true;
-        else 
+        else
             return false;
-    else
+    }
+
+    if (noum())
+        return true;
+    else 
         return false;
 
     return false;
@@ -135,6 +148,14 @@ void check_sentence()
 
 int main()
 {
+    /* cout << "Enter string: "; */
+    /* string s; */
+    /* cin >> s; */
+    /* cout << "Input string : " << s << endl; */
+    /* putback_string(s); */
+    /* cin >> s; */
+    /* cout << "After putback :" << s << endl; */
+
     try
     {
         check_sentence();
