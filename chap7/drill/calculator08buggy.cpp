@@ -9,15 +9,21 @@
 
 #include "std_lib_facilities.h"
 
+/*
+ * トークンを保存
+ */
 struct Token {
-	char kind;
-	double value;
-	string name;
+	char kind;      // トークンの種類
+	double value;   // トークンの値
+	string name;    // 変数名
 	Token(char ch) :kind(ch), value(0) { }
 	Token(char ch, double val) :kind(ch), value(val) { }
         Token(char ch, string s) :kind(ch), name(s) {}
 };
 
+/*
+ * トークンを取り出すストリーム
+ */
 class Token_stream {
 	bool full;
 	Token buffer;
@@ -30,12 +36,15 @@ public:
 	void ignore(char);
 };
 
-const char let = 'L';
-const char quit = 'Q';
-const char print = ';';
-const char number = '8';
-const char name = 'a';
+const char let = 'L';       // 変数
+const char quit = 'Q';      // 終了
+const char print = ';';     // 計算結果表示
+const char number = '8';    // 数値
+const char name = 'a';      // 変数名
 
+/*
+ * トークンを取得
+ */
 Token Token_stream::get()
 {
 	if (full) { full=false; return buffer; }
@@ -69,11 +78,12 @@ Token Token_stream::get()
 		return Token(number,val);
 	}
 	default:
+                // 変数の読み込み
 		if (isalpha(ch)) {
 			string s;
 			s += ch;
 			while(cin.get(ch) && (isalpha(ch) || isdigit(ch))) s+=ch;
-			cin.unget();
+			cin.unget();    // 上のループを抜けるために読み込んだ1文字をストリームに返却
 			if (s == "let") return Token(let);	
                         // find bus under line. changed "name" to "quit"
 			if (s == "quit") return Token(quit);
@@ -96,14 +106,18 @@ void Token_stream::ignore(char c)
 		if (ch==c) return;
 }
 
+/*
+ * 変数
+ */
 struct Variable {
-	string name;
-	double value;
+	string name;    // 変数名
+	double value;   // 値
 	Variable(string n, double v) :name(n), value(v) { }
 };
 
-vector<Variable> names;	
+vector<Variable> names;	    // 変数情報
 
+// 変数名から値を取得
 double get_value(string s)
 {
 	for (size_t i = 0; i<names.size(); ++i)
@@ -111,6 +125,7 @@ double get_value(string s)
 	error("get: undefined name ",s);
 }
 
+// 変数を設定
 void set_value(string s, double d)
 {
 	for (size_t i = 0; i<=names.size(); ++i)
@@ -121,6 +136,7 @@ void set_value(string s, double d)
 	error("set: undefined name ",s);
 }
 
+// 変数名の宣言確認
 bool is_declared(string s)
 {
 	for (size_t i = 0; i<names.size(); ++i)
@@ -142,6 +158,9 @@ double primary()
 		if (t.kind != ')') error("'(' expected");
                 return d;
 	}
+        // 論理バグ発見! +数字に対応する。
+        case '+':
+                return + primary();
 	case '-':
 		return - primary();
 	case number:
