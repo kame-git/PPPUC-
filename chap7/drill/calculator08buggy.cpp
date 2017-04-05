@@ -175,18 +175,34 @@ double primary()
 double term()
 {
 	double left = primary();
+        Token t = ts.get();
+
 	while(true) {
-		Token t = ts.get();
 		switch(t.kind) {
 		case '*':
 			left *= primary();
+                        t = ts.get();
 			break;
 		case '/':
 		{	double d = primary();
 			if (d == 0) error("divide by zero");
 			left /= d;
+                        t = ts.get();
 			break;
 		}
+                // 論理バグ発見! %記号に対応する。
+                case '%':
+                {
+                    double d = primary();
+                    int i1 = int(left);
+                    if (i1 != left) error("left-hand operand of % not int");
+                    int i2 = int(d);
+                    if (i2 != d) error("right-hand operand of % not int");
+                    if (i2 == 0) error("%d: divide bye zero");
+                    left = i1 % i2;
+                    t = ts.get();
+                    break;
+                }
 		default:
 			ts.unget(t);
 			return left;
