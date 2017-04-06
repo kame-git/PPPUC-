@@ -37,6 +37,7 @@ public:
 };
 
 const char let = 'L';       // 変数
+const char sq = 'S';        // 平方根
 const char quit = 'Q';      // 終了
 const char print = ';';     // 計算結果表示
 const char number = '8';    // 数値
@@ -85,6 +86,7 @@ Token Token_stream::get()
 			while(cin.get(ch) && (isalpha(ch) || isdigit(ch))) s+=ch;
 			cin.unget();    // 上のループを抜けるために読み込んだ1文字をストリームに返却
 			if (s == "let") return Token(let);	
+                        if (s == "sqrt") return Token(sq);
                         // find bus under line. changed "name" to "quit"
 			if (s == "quit") return Token(quit);
 			return Token(name,s);
@@ -144,9 +146,18 @@ bool is_declared(string s)
 	return false;
 }
 
+// 変数をテーブルに追加
+double define_name(string var, double val)
+{
+    if (is_declared(var)) error(var, " declared twice");
+    names.push_back(Variable(var, val));
+    return val;
+}
+
 Token_stream ts;
 
 double expression();
+double square_root();
 
 double primary()
 {
@@ -167,6 +178,8 @@ double primary()
 		return t.value;
 	case name:
 		return get_value(t.name);
+        case sq:
+                return square_root();
 	default:
 		error("primary expected");
 	}
@@ -242,6 +255,20 @@ double declaration()
 	return d;
 }
 
+/*
+ * 平方根を計算
+ */
+
+double square_root()
+{
+    Token t = ts.get();
+    if (t.kind != '(') error ("'(' exptected");
+    double d = sqrt(expression());
+    t = ts.get();
+    if (t.kind != ')') error ("')' exptected");
+    return d;
+}
+
 double statement()
 {
 	Token t = ts.get();
@@ -281,18 +308,22 @@ void calculate()
 int main()
 
 	try {
-		calculate();
-		return 0;
+            define_name("pi", 3.1415926535);
+            define_name("e", 2.7182818284);
+            define_name("k", 1000);
+
+            calculate();
+            return 0;
 	}
 	catch (exception& e) {
-		cerr << "exception: " << e.what() << endl;
-		char c;
-		while (cin >>c&& c!=';') ;
-		return 1;
+            cerr << "exception: " << e.what() << endl;
+            char c;
+            while (cin >>c&& c!=';') ;
+            return 1;
 	}
 	catch (...) {
-		cerr << "exception\n";
-		char c;
-		while (cin>>c && c!=';');
-		return 2;
+            cerr << "exception\n";
+            char c;
+            while (cin>>c && c!=';');
+            return 2;
 	}

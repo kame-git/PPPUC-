@@ -13,5 +13,5 @@ clean:
 test:
 	./$(TARGET)
 
-tags:
+tags: $(SOURCES)
 	ctags -R
