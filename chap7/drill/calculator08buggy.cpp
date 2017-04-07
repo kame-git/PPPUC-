@@ -263,7 +263,9 @@ double square_root()
 {
     Token t = ts.get();
     if (t.kind != '(') error ("'(' exptected");
-    double d = sqrt(expression());
+    double d = expression();
+    if (d < 0) error ("negative number isn't use sqrt.");
+    d = sqrt(d);
     t = ts.get();
     if (t.kind != ')') error ("')' exptected");
     return d;
