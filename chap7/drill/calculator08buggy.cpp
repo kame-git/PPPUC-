@@ -42,6 +42,7 @@ const char quit = 'Q';      // 終了
 const char print = ';';     // 計算結果表示
 const char number = '8';    // 数値
 const char name = 'a';      // 変数名
+const char pw = 'p';     // 階乗
 
 /*
  * トークンを取得
@@ -87,6 +88,7 @@ Token Token_stream::get()
 			cin.unget();    // 上のループを抜けるために読み込んだ1文字をストリームに返却
 			if (s == "let") return Token(let);	
                         if (s == "sqrt") return Token(sq);
+                        if (s == "pow") return Token(pw);
                         // find bus under line. changed "name" to "quit"
 			if (s == "quit") return Token(quit);
 			return Token(name,s);
@@ -158,6 +160,7 @@ Token_stream ts;
 
 double expression();
 double square_root();
+double power();
 
 double primary()
 {
@@ -180,6 +183,8 @@ double primary()
 		return get_value(t.name);
         case sq:
                 return square_root();
+        case pw:
+                return power();
 	default:
 		error("primary expected");
 	}
@@ -262,12 +267,35 @@ double declaration()
 double square_root()
 {
     Token t = ts.get();
-    if (t.kind != '(') error ("'(' exptected");
+    if (t.kind != '(') error ("'(' expected");
     double d = expression();
     if (d < 0) error ("negative number isn't use sqrt.");
     d = sqrt(d);
     t = ts.get();
-    if (t.kind != ')') error ("')' exptected");
+    if (t.kind != ')') error ("')' expected");
+    return d;
+}
+
+/*
+ * 階乗計算
+ */
+double power()
+{
+    Token t = ts.get();
+    if (t.kind != '(') error ("'(' expected");
+    double d;
+    double r;
+    char c;
+    if (cin >> d >> c >> r) {
+        int i = int(r);
+        if (i != r || i < 0) error ("arg 1 of sqrt error");
+        d = pow(d, r);
+    }
+    else {
+        error ("arguments of sqrt error");
+    }
+    t = ts.get();
+    if (t.kind != ')') error ("')' expected");
     return d;
 }
 
