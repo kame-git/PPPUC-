@@ -63,6 +63,8 @@ Token Token_stream::get()
 	case ';':
 	case '=':
 		return Token(ch);
+        case '#':   // 宣言キーワード
+                return Token(let);
 	case '.':
 	case '0':
 	case '1':
@@ -86,7 +88,6 @@ Token Token_stream::get()
 			s += ch;
 			while(cin.get(ch) && (isalpha(ch) || isdigit(ch))) s+=ch;
 			cin.unget();    // 上のループを抜けるために読み込んだ1文字をストリームに返却
-			if (s == "let") return Token(let);	
                         if (s == "sqrt") return Token(sq);
                         if (s == "pow") return Token(pw);
                         // find bus under line. changed "name" to "quit"
