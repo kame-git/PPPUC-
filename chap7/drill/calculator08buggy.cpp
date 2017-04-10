@@ -91,7 +91,7 @@ Token Token_stream::get()
                         if (s == "sqrt") return Token(sq);
                         if (s == "pow") return Token(pw);
                         // find bus under line. changed "name" to "quit"
-			if (s == "quit") return Token(quit);
+			if (s == "exit") return Token(quit);
 			return Token(name,s);
 		}
 		error("Bad token");
