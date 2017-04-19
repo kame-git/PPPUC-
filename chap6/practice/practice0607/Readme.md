@@ -7,15 +7,15 @@
 * x^y&z=x^(y&z) 
 ## 文法
 Expression:  
-    Term1  
-    Expression "|" Term1  
+        Term1  
+        Expression "|" Term1  
 Term1:  
-    Term2  
-    Term1 "^" Primary  
+        Term2  
+        Term1 "^" Primary  
 Term2:  
-    Primary  
-    Term2 "&" Primary  
+        Primary  
+        Term2 "&" Primary  
 Primary:  
-    Number  
-    "~" Number  
-    "!" Number  
+        Number  
+        "~" Number  
+        "!" Number  
